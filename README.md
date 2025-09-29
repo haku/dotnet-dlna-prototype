@@ -1,8 +1,10 @@
 Run
 ---
 
-$ nix-shell
-$ dotnet run
+```shell
+nix-shell
+dotnet run
+```
 
 Notes
 -----
