@@ -1,4 +1,6 @@
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using ISSDP.UPnP.PCL.Enum;
 using ISSDP.UPnP.PCL.Interfaces.Model;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -8,6 +10,7 @@ namespace _1iveowl;
 
 public class UpnpManager
 {
+    internal readonly Guid uuid;
     internal readonly IRootDeviceConfiguration deviceCfg;
     internal readonly IPAddress address;
 
@@ -15,15 +18,21 @@ public class UpnpManager
     {
         var addresses = server.Features.Get<IServerAddressesFeature>();
         var uri = new Uri(addresses.Addresses.First());
+
         address = IPAddress.Parse(uri.Host);
-        deviceCfg = CreateRootDevice(address);
+
+        using var md5 = MD5.Create();
+        byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes($"sdfijsifjsdf-{address.ToString()}"));
+        uuid = new Guid(hash);
+
+        deviceCfg = CreateRootDevice();
     }
 
-    private static IRootDeviceConfiguration CreateRootDevice(IPAddress address)
+    private IRootDeviceConfiguration CreateRootDevice()
     {
         return new RootDeviceConfiguration
         {
-            DeviceUUID = Guid.NewGuid().ToString(),
+            DeviceUUID = uuid.ToString(),
             CacheControl = TimeSpan.FromSeconds(300),
             Location = new Uri($"http://{address.ToString()}:5000/device"),
             Server = new Server
@@ -53,5 +62,5 @@ public class UpnpManager
             }
         };
     }
-    
+
 }

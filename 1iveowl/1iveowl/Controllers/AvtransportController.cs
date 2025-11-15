@@ -1,5 +1,6 @@
 using System.Net;
 using System.Security;
+using _1iveowl.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _1iveowl.Controllers;
@@ -168,6 +169,63 @@ public class AvtransportController : ControllerBase
             </argument>
         </argumentList>
     </action>
+
+    <action>
+        <name>GetMediaInfo</name>
+        <argumentList>
+            <argument>
+            <name>InstanceID</name>
+            <direction>in</direction>
+            <relatedStateVariable>A_ARG_TYPE_InstanceID</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>NrTracks</name>
+            <direction>out</direction>
+            <relatedStateVariable>NumberOfTracks</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>MediaDuration</name>
+            <direction>out</direction>
+            <relatedStateVariable>CurrentMediaDuration</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>CurrentURI</name>
+            <direction>out</direction>
+            <relatedStateVariable>AVTransportURI</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>CurrentURIMetaData</name>
+            <direction>out</direction>
+            <relatedStateVariable>AVTransportURIMetaData</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>NextURI</name>
+            <direction>out</direction>
+            <relatedStateVariable>NextAVTransportURI</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>NextURIMetaData</name>
+            <direction>out</direction>
+            <relatedStateVariable>NextAVTransportURIMetaData</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>PlayMedium</name>
+            <direction>out</direction>
+            <relatedStateVariable>PlaybackStorageMedium</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>RecordMedium</name>
+            <direction>out</direction>
+            <relatedStateVariable>RecordStorageMedium</relatedStateVariable>
+            </argument>
+            <argument>
+            <name>WriteStatus</name>
+            <direction>out</direction>
+            <relatedStateVariable>RecordMediumWriteStatus</relatedStateVariable>
+            </argument>
+        </argumentList>
+    </action>
+
   </actionList> 
   <serviceStateTable>
     <stateVariable sendEvents=""no"">
@@ -253,6 +311,63 @@ public class AvtransportController : ControllerBase
 <defaultValue>2147483647</defaultValue>
 </stateVariable>
 
+<stateVariable sendEvents=""no"">
+    <name>NumberOfTracks</name>
+    <dataType>ui4</dataType>
+    <defaultValue>0</defaultValue>
+</stateVariable>
+<stateVariable sendEvents=""no"">
+    <name>CurrentMediaDuration</name>
+    <dataType>string</dataType>
+    <defaultValue>00:00:00</defaultValue>
+</stateVariable>
+<stateVariable sendEvents=""no"">
+    <name>NextAVTransportURI</name>
+    <dataType>string</dataType>
+    <defaultValue>NOT_IMPLEMENTED</defaultValue>
+</stateVariable>
+<stateVariable sendEvents=""no"">
+    <name>NextAVTransportURIMetaData</name>
+    <dataType>string</dataType>
+    <defaultValue>NOT_IMPLEMENTED</defaultValue>
+</stateVariable>
+<stateVariable sendEvents=""no"">
+    <name>PlaybackStorageMedium</name>
+    <dataType>string</dataType>
+    <defaultValue>NONE</defaultValue>
+    <allowedValueList>
+    <allowedValue>UNKNOWN</allowedValue>
+    <allowedValue>NETWORK</allowedValue>
+    <allowedValue>NONE</allowedValue>
+    <allowedValue>NOT_IMPLEMENTED</allowedValue>
+    <allowedValue>VENDOR_SPECIFIC</allowedValue>
+    </allowedValueList>
+</stateVariable>
+<stateVariable sendEvents=""no"">
+    <name>RecordStorageMedium</name>
+    <dataType>string</dataType>
+    <defaultValue>NOT_IMPLEMENTED</defaultValue>
+    <allowedValueList>
+    <allowedValue>UNKNOWN</allowedValue>
+    <allowedValue>NETWORK</allowedValue>
+    <allowedValue>NONE</allowedValue>
+    <allowedValue>NOT_IMPLEMENTED</allowedValue>
+    <allowedValue>VENDOR_SPECIFIC</allowedValue>
+    </allowedValueList>
+</stateVariable>
+<stateVariable sendEvents=""no"">
+    <name>RecordMediumWriteStatus</name>
+    <dataType>string</dataType>
+    <defaultValue>NOT_IMPLEMENTED</defaultValue>
+    <allowedValueList>
+    <allowedValue>WRITABLE</allowedValue>
+    <allowedValue>PROTECTED</allowedValue>
+    <allowedValue>NOT_WRITABLE</allowedValue>
+    <allowedValue>UNKNOWN</allowedValue>
+    <allowedValue>NOT_IMPLEMENTED</allowedValue>
+    </allowedValueList>
+</stateVariable>
+
   </serviceStateTable>
 </scpd>", CONTENT_TYPE);
     }
@@ -262,130 +377,152 @@ public class AvtransportController : ControllerBase
     
     [HttpPost]
     [Route("AVTransport/control")]
-    public async Task<IActionResult> AVTransportControl()
+    public async Task<IActionResult> AVTransportControl([FromBody] Envelope envelope)
     {
-        if (!Request.Body.CanSeek) Request.EnableBuffering();
-        Request.Body.Position = 0;
-        using var reader = new StreamReader(Request.Body); // TODO fix encoding.
-        string body = await reader.ReadToEndAsync();
-        
         string soapAction = Request.Headers["SOAPACTION"].First() ?? "";
-            Console.WriteLine($"SOAPAction header: {soapAction}");
+        Console.WriteLine($"SOAPAction header: {soapAction}");
 
-            string action = ParseSoapActionName(body);
-            Console.WriteLine($"Action: {action}");
-
-            string responseXml = null;
-            int status = 200;
-
-            switch (action)
-            {
-                case "SetAVTransportURI":
-                {
-                    currentUri = ExtractXmlTag(body, "CurrentURI") ?? "";
-                    transportState = "STOPPED";
-                    Console.WriteLine($"Set URI: {currentUri}");
-                    responseXml = WrapEmptyActionResponse("SetAVTransportURIResponse");
-                }
-                    break;
-                case "Play":
-                    transportState = "PLAYING";
-                    Console.WriteLine("Play command received");
-                    responseXml = WrapEmptyActionResponse("PlayResponse");
-                    break;
-                case "Pause":
-                    transportState = "PAUSED_PLAYBACK";
-                    Console.WriteLine("Pause command received");
-                    responseXml = WrapEmptyActionResponse("PauseResponse");
-                    break;
-                case "Stop":
-                    transportState = "STOPPED";
-                    Console.WriteLine("Stop command received");
-                    responseXml = WrapEmptyActionResponse("StopResponse");
-                    break;
-                case "Next":
-                    Console.WriteLine("Next command received");
-                    responseXml = WrapEmptyActionResponse("NextResponse");
-                    break;
-                case "Previous":
-                    Console.WriteLine("Previous command received");
-                    responseXml = WrapEmptyActionResponse("PreviousResponse");
-                    break;
-                case "GetTransportInfo":
-                    responseXml = transportInfoXml(transportState);
-                    break;
-                case "GetPositionInfo":
-                    responseXml = positionInfoXml(currentUri);
-                    break;
-                default:
-                    status = 500;
-                    responseXml = soapError("401", "Action not implemented");
-                    break;
-            }
-
-            var resp = Content(responseXml, CONTENT_TYPE);
-            resp.StatusCode = status;
-            return resp;
-    }
-
-    static string ParseSoapActionName(string soapXml)
-    {
-        if (string.IsNullOrWhiteSpace(soapXml)) return "";
-        int i = soapXml.IndexOf('<');
-        while (i >= 0)
+        var body = envelope.Body;
+        string? action = null;
+        if (body.SetAVTransportURI != null)
         {
-            i = soapXml.IndexOf('<', i + 1);
-            if (i < 0) break;
-            int start = i + 1;
-            if (start >= soapXml.Length) break;
-            // skip slash
-            if (soapXml[start] == '/') { continue; }
-            int j = soapXml.IndexOfAny(new char[] { ' ', '>', ':' }, start);
-            if (j < 0) continue;
-            string tag = soapXml.Substring(start, j - start);
-            // skip common envelope tags
-            if (tag == "s:Envelope" || tag == "s:Body" || tag == "u:GetTransportInfo" || tag.EndsWith("Response")) continue;
-            // return first plausible action name
-            return tag.Contains(":") ? tag.Split(':')[1] : tag;
+            action = "SetAVTransportURI";
         }
-        return "";
-    }
+        else if (body.Play != null)
+        {
+            action = "Play";
+        }
+        else if (body.Pause != null)
+        {
+            action = "Pause";
+        }
+        else if (body.Stop != null)
+        {
+            action = "Stop";
+        }
+        else if (body.Next != null)
+        {
+            action = "Next";
+        }
+        else if (body.Previous != null)
+        {
+            action = "Previous";
+        }
+        else if (body.GetTransportInfo != null)
+        {
+            action = "GetTransportInfo";
+        }
+        else if (body.GetPositionInfo != null)
+        {
+            action = "GetPositionInfo";
+        }
+        else if (body.GetMediaInfo != null)
+        {
+            action = "GetMediaInfo";
+        }
+        
+        Console.WriteLine($"Action: {action}");
 
-    static string ExtractXmlTag(string xml, string tag)
-    {
-        string open = "<" + tag + ">";
-        string close = "</" + tag + ">";
-        int a = xml.IndexOf(open);
-        int b = xml.IndexOf(close);
-        if (a >= 0 && b > a)
-            return WebUtility.HtmlDecode(xml.Substring(a + open.Length, b - (a + open.Length)));
-        return null;
+        string responseXml = null;
+        int status = 200;
+
+        switch (action)
+        {
+            case "SetAVTransportURI":
+                currentUri = body.SetAVTransportURI.CurrentURI ?? "";
+                transportState = "STOPPED";
+                Console.WriteLine($"Set URI: {currentUri}");
+                responseXml = WrapEmptyActionResponse("SetAVTransportURIResponse");
+                break;
+            case "Play":
+                transportState = "PLAYING";
+                Console.WriteLine("Play command received");
+                responseXml = WrapEmptyActionResponse("PlayResponse");
+                break;
+            case "Pause":
+                transportState = "PAUSED_PLAYBACK";
+                Console.WriteLine("Pause command received");
+                responseXml = WrapEmptyActionResponse("PauseResponse");
+                break;
+            case "Stop":
+                transportState = "STOPPED";
+                Console.WriteLine("Stop command received");
+                responseXml = WrapEmptyActionResponse("StopResponse");
+                break;
+            case "Next":
+                Console.WriteLine("Next command received");
+                responseXml = WrapEmptyActionResponse("NextResponse");
+                break;
+            case "Previous":
+                Console.WriteLine("Previous command received");
+                responseXml = WrapEmptyActionResponse("PreviousResponse");
+                break;
+            case "GetTransportInfo":
+                responseXml = transportInfoXml(transportState);
+                break;
+            case "GetPositionInfo":
+                responseXml = positionInfoXml(currentUri);
+                break;
+            case "GetMediaInfo":
+                responseXml = mediaInfoXml(currentUri);
+                break;
+            default:
+                status = 500;
+                responseXml = soapError("401", "Action not implemented");
+                break;
+        }
+
+        var resp = Content(responseXml, CONTENT_TYPE);
+        resp.StatusCode = status;
+        return resp;
     }
 
     static string WrapEmptyActionResponse(string responseName) => $"<?xml version=\"1.0\"?>\n<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n  <s:Body>\n    <u:{responseName} xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"/>\n  </s:Body>\n</s:Envelope>";
 
     static string transportInfoXml(string currentTransportState) => $@"<?xml version=""1.0""?>
 <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
-  <s:Body>          
+  <s:Body>
     <u:GetTransportInfoResponse xmlns:u=""urn:schemas-upnp-org:service:AVTransport:1"">
+      <InstanceID>0</InstanceID>
       <CurrentTransportState>{SecurityElement.Escape(currentTransportState)}</CurrentTransportState>
       <CurrentTransportStatus>OK</CurrentTransportStatus>
       <CurrentSpeed>1</CurrentSpeed>
     </u:GetTransportInfoResponse>
-  </s:Body>             
+  </s:Body>
 </s:Envelope>";
 
     static string positionInfoXml(string uri) => $@"<?xml version=""1.0""?>
 <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
   <s:Body>
     <u:GetPositionInfoResponse xmlns:u=""urn:schemas-upnp-org:service:AVTransport:1"">
-      <Track>1</Track>
+      <InstanceID>0</InstanceID>
+      <Track>0</Track>
       <TrackDuration>00:00:00</TrackDuration>
       <TrackMetaData></TrackMetaData>
       <TrackURI>{SecurityElement.Escape(uri)}</TrackURI>
       <RelTime>00:00:00</RelTime>
       <AbsTime>00:00:00</AbsTime>
+      <RelCount>2147483647</RelCount>
+      <AbsCount>2147483647</AbsCount>
     </u:GetPositionInfoResponse>
+  </s:Body>
+</s:Envelope>";
+
+    static string mediaInfoXml(string uri) => $@"<?xml version=""1.0""?>
+<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
+  <s:Body>
+    <u:GetMediaInfoResponse xmlns:u=""urn:schemas-upnp-org:service:AVTransport:1"">
+      <InstanceID>0</InstanceID>
+      <NrTracks>0</NrTracks>
+      <CurrentURI>{SecurityElement.Escape(uri)}</CurrentURI>
+      <CurrentURIMetaData></CurrentURIMetaData>
+      <MediaDuration>01:00:00</MediaDuration>
+      <NextURI></NextURI>
+      <NextURIMetaData></NextURIMetaData>
+      <PlayMedium>NONE</PlayMedium>
+      <RecordMedium>NOT_IMPLEMENTED</RecordMedium>
+      <WriteStatus>NOT_IMPLEMENTED</WriteStatus>
+    </u:GetMediaInfoResponse>
   </s:Body>
 </s:Envelope>";
 
@@ -404,5 +541,5 @@ public class AvtransportController : ControllerBase
     </s:Fault>
   </s:Body>
 </s:Envelope>";
-    
+
 }

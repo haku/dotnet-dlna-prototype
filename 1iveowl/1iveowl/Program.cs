@@ -49,7 +49,7 @@ class Program
 
         await app.RunAsync();
     }
-    
+
     static IPAddress GetLocalIPAddress()
     {
         foreach (var network in NetworkInterface.GetAllNetworkInterfaces())
@@ -113,9 +113,9 @@ class Program
                     {
                         Console.WriteLine($"BOOTID: {n.BOOTID}");
                     }
-                
+
                     Console.WriteLine($"CONFIGID: {n.CONFIGID}");
-                    
+
                     Console.WriteLine($"NEXTBOOTID: {n.NEXTBOOTID}");
                     Console.WriteLine($"SEARCHPORT: {n.SEARCHPORT}");
                     Console.WriteLine($"SECURELOCATION: {n.SECURELOCATION}");
@@ -212,7 +212,7 @@ class Program
 
         await _controlPoint.SendMSearchAsync(mSearchMessage, _controlPointLocalIp1);
     }
-    
+
 }
 
 internal class MSearch : IMSearchRequest
