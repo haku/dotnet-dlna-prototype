@@ -1,11 +1,5 @@
-// MinimalDLNARenderer.cs
-// Single-file minimal DLNA/UPnP AVTransport "renderer" that:
-// - responds to SSDP M-SEARCH and sends a basic NOTIFY (simple discovery)
-// - hosts a tiny HTTP server with a device description and an AVTransport control endpoint
-// - supports Play, Pause, Stop, Next, Previous, SetAVTransportURI
-// NOTE: This is a minimal *learning* example, not a full DLNA-compliant stack.
-
 using System.IO;
+using System.Net.NetworkInformation ;
 using System.Net.Sockets;
 using System.Net;
 using System.Security;
@@ -116,7 +110,7 @@ class MinimalDLNARenderer
 
     static async Task Main()
     {
-        localIp = "10.101.15.200";//GetLocalIPAddress();
+        localIp = GetLocalIPAddress();
         Console.WriteLine($"Local IP: {localIp}");
 
         CancellationTokenSource cts = new CancellationTokenSource();
@@ -133,7 +127,7 @@ class MinimalDLNARenderer
     static async Task RunHttpServer(CancellationToken ct)
     {
         var listener = new HttpListener();
-        string prefix = $"http://+:{httpPort}/"; // binds to all addresses
+        string prefix = $"http://{localIp}:{httpPort}/";
         listener.Prefixes.Add(prefix);
         listener.Start();
         Console.WriteLine($"HTTP server listening on {prefix}");
@@ -299,13 +293,7 @@ class MinimalDLNARenderer
             IPEndPoint localEp = new IPEndPoint(IPAddress.Any, 1900);
             udp.Client.Bind(localEp);
 
-            // join multicast
-            try
-            {
-                udp.JoinMulticastGroup(IPAddress.Parse("239.255.255.250"));
-            }
-            catch { }
-
+            udp.JoinMulticastGroup(IPAddress.Parse("239.255.255.250"));
             Console.WriteLine("SSDP responder listening on port 1900");
 
             // send initial NOTIFY once
@@ -318,13 +306,25 @@ class MinimalDLNARenderer
                 if (msg.StartsWith("M-SEARCH", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Received M-SEARCH from " + result.RemoteEndPoint);
-                    if (msg.IndexOf("ssdp:all", StringComparison.OrdinalIgnoreCase) >= 0 || msg.IndexOf("MediaRenderer", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        string resp = $"HTTP/1.1 200 OK\r\nST: {serviceType}\r\nUSN: {deviceUuid}::{serviceType}\r\nLOCATION: http://{localIp}:{httpPort}/description.xml\r\nCACHE-CONTROL: max-age=1800\r\n\r\n";
-                        byte[] b = Encoding.UTF8.GetBytes(resp);
-                        await udp.SendAsync(b, b.Length, result.RemoteEndPoint);
-                        Console.WriteLine("Sent M-SEARCH response to " + result.RemoteEndPoint);
-                    }
+                    try
+                        {
+                            if (msg.IndexOf("ssdp:all", StringComparison.OrdinalIgnoreCase) >= 0
+                                || msg.IndexOf("MediaRenderer", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                string resp = $"HTTP/1.1 200 OK\r\n"
+                                    + "ST: {serviceType}\r\n"
+                                    + "USN: {deviceUuid}::{serviceType}\r\n"
+                                    + "LOCATION: http://{localIp}:{httpPort}/description.xml\r\n"
+                                    + "CACHE-CONTROL: max-age=1800\r\n\r\n";
+                                byte[] b = Encoding.UTF8.GetBytes(resp);
+                                await udp.SendAsync(b, b.Length, result.RemoteEndPoint);
+                                Console.WriteLine("Sent M-SEARCH response to " + result.RemoteEndPoint);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Failed to sed M-SEARCH response to {result.RemoteEndPoint}: {e}");
+                        }
                 }
             }
         }
@@ -337,12 +337,26 @@ class MinimalDLNARenderer
             var multicast = new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900);
             while (!ct.IsCancellationRequested)
             {
-                string notify1 = $"NOTIFY * HTTP/1.1\r\nLOCATION: http://{localIp}:{httpPort}/description.xml\r\nCACHE-CONTROL: max-age=300\r\nNT: upnp:rootdevice\r\nHOST: 239.255.255.250:1900\r\nNTS: ssdp:alive\r\nUSN: {deviceUuid}::upnp:rootdevice\r\nSERVER: MinimalDLNARenderer/1.0 UPnP/1.0\r\n\r\n";
+                string notify1 = $"NOTIFY * HTTP/1.1\r\n"
+                    + "LOCATION: http://{localIp}:{httpPort}/description.xml\r\n"
+                    + "CACHE-CONTROL: max-age=300\r\n"
+                    + "NT: upnp:rootdevice\r\n"
+                    + "HOST: 239.255.255.250:1900\r\n"
+                    + "NTS: ssdp:alive\r\n"
+                    + "USN: {deviceUuid}::upnp:rootdevice\r\n"
+                    + "SERVER: MinimalDLNARenderer/1.0 UPnP/1.0\r\n\r\n";
                 byte[] b1 = Encoding.UTF8.GetBytes(notify1);
                 try { await udp.SendAsync(b1, b1.Length, multicast); } catch { }
-                await Task.Delay(TimeSpan.FromSeconds(15), ct).ContinueWith(_ => { });
+                await Task.Delay(TimeSpan.FromSeconds(1), ct).ContinueWith(_ => { });
 
-                string notify2 = $"NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nNT: {serviceType}\r\nNTS: ssdp:alive\r\nUSN: {deviceUuid}::{serviceType}\r\nLOCATION: http://{localIp}:{httpPort}/description.xml\r\nCACHE-CONTROL: max-age=1800\r\nSERVER: MinimalDLNARenderer/1.0 UPnP/1.0\r\n\r\n";
+                string notify2 = $"NOTIFY * HTTP/1.1\r\n"
+                    + "HOST: 239.255.255.250:1900\r\n"
+                    + "NT: {serviceType}\r\n"
+                    + "NTS: ssdp:alive\r\n"
+                    + "USN: {deviceUuid}::{serviceType}\r\n"
+                    + "LOCATION: http://{localIp}:{httpPort}/description.xml\r\n"
+                    + "CACHE-CONTROL: max-age=1800\r\n"
+                    + "SERVER: MinimalDLNARenderer/1.0 UPnP/1.0\r\n\r\n";
                 byte[] b2 = Encoding.UTF8.GetBytes(notify2);
                 try { await udp.SendAsync(b2, b2.Length, multicast); } catch { }
                 await Task.Delay(TimeSpan.FromSeconds(15), ct).ContinueWith(_ => { });
@@ -352,21 +366,26 @@ class MinimalDLNARenderer
 
     static string GetLocalIPAddress()
     {
-        string ip = "127.0.0.1";
-        try
+        foreach (NetworkInterface network in NetworkInterface.GetAllNetworkInterfaces())
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var addr in host.AddressList)
+            if (network.NetworkInterfaceType != NetworkInterfaceType.Ethernet
+                || network.OperationalStatus != OperationalStatus.Up
+                || new[] { "docker", "tailscale" }.Any(c => network.Description.ToLower().Contains(c)))
             {
-                if (addr.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    ip = addr.ToString();
-                    break;
-                }
+              continue;
+            }
+
+            foreach (IPAddressInformation address in network.GetIPProperties().UnicastAddresses)
+            {
+              if (address.Address.AddressFamily != AddressFamily.InterNetwork)
+                continue;
+
+              if (IPAddress.IsLoopback(address.Address))
+                continue;
+
+              return address.Address.ToString();
             }
         }
-        catch { }
-        return ip;
+        return "127.0.0.1";
     }
 }
-
