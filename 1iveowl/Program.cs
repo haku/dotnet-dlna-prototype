@@ -31,16 +31,16 @@ class Program
         {
             _controlPointLocalIp1 = GetLocalIPAddress();
         }
-        
+
         Console.WriteLine($"IP Address: {_controlPointLocalIp1.ToString()}");
 
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddSingleton<Avtransport>(s => 
-            new Avtransport(_controlPointLocalIp1, s.GetRequiredService<IHostApplicationLifetime>()));
-        builder.Services.AddHostedService<Avtransport>(s => s.GetRequiredService<Avtransport>());
-        
+        builder.Services.AddSingleton<UpnpManager>();
+        builder.Services.AddHostedService<Avtransport>();
+        builder.Services.AddControllers().AddXmlSerializerFormatters();
+
         var app = builder.Build();
-        app.Services.GetRequiredService<Avtransport>().UseAvtransport(app);
+        app.MapControllers();
         app.Urls.Add($"http://{_controlPointLocalIp1.ToString()}:5000");
 
         // var cts = new CancellationTokenSource();
