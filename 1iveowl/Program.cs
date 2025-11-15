@@ -1,10 +1,11 @@
-﻿using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using _1iveowl;
 using ISSDP.UPnP.PCL.Enum;
-using ISSDP.UPnP.PCL.Interfaces.Service;
 using ISSDP.UPnP.PCL.Interfaces.Model;
+using ISSDP.UPnP.PCL.Interfaces.Service;
 using SSDP.UPnP.PCL.ExtensionMethod;
 using SSDP.UPnP.PCL.Helper;
 using SSDP.UPnP.PCL.Model;
@@ -15,12 +16,11 @@ class Program
     private static IControlPoint _controlPoint;
     private static IPAddress _controlPointLocalIp1;
 
-    static async Task Main(string[] args)
+    private static async Task Main(string[] args)
     {
-        if (args?.Any() ?? false)
+        if (args.Length > 0)
         {
             var ipStr = args[0];
-
             if (IPAddress.TryParse(ipStr, out var ip))
             {
                 _controlPointLocalIp1 = ip;
@@ -34,24 +34,45 @@ class Program
         
         Console.WriteLine($"IP Address: {_controlPointLocalIp1.ToString()}");
 
-        var cts = new CancellationTokenSource();
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddSingleton<Avtransport>(s => 
+            new Avtransport(_controlPointLocalIp1, s.GetRequiredService<IHostApplicationLifetime>()));
+        builder.Services.AddHostedService<Avtransport>(s => s.GetRequiredService<Avtransport>());
+        
+        var app = builder.Build();
+        app.Services.GetRequiredService<Avtransport>().UseAvtransport(app);
+        app.Urls.Add($"http://{_controlPointLocalIp1.ToString()}:5000");
 
-        await StartAsync(cts.Token);
+        // var cts = new CancellationTokenSource();
+        // var ct = cts.Token;
+        // await StartControlPointListeningAsync(ct);
 
-        Console.WriteLine("Press any key to end.");
-
-        Console.ReadKey();
-
-        cts.Cancel();
-
-        Console.WriteLine("Press any key to exit.");
-        Console.ReadKey();
-
+        await app.RunAsync();
     }
-
-    private static async Task StartAsync(CancellationToken ct)
+    
+    static IPAddress GetLocalIPAddress()
     {
-        await StartControlPointListeningAsync(ct);
+        foreach (var network in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (network.NetworkInterfaceType != NetworkInterfaceType.Ethernet
+                || network.OperationalStatus != OperationalStatus.Up
+                || new[] { "docker", "tailscale" }.Any(c => network.Description.ToLower().Contains(c)))
+            {
+                continue;
+            }
+
+            foreach (var address in network.GetIPProperties().UnicastAddresses)
+            {
+                if (address.Address.AddressFamily != AddressFamily.InterNetwork)
+                    continue;
+
+                if (IPAddress.IsLoopback(address.Address))
+                    continue;
+
+                return address.Address;
+            }
+        }
+        return IPAddress.Parse("127.0.0.1");
     }
 
     private static async Task StartControlPointListeningAsync(CancellationToken ct)
@@ -63,12 +84,10 @@ class Program
         await StartMSearchRequestMulticastAsync();
     }
 
-        private static void ListenToNotify()
+    private static void ListenToNotify()
     {
-        var counter = 0;
-
         var observerNotify = _controlPoint.NotifyObservable();
-
+        var counter = 0;
         var disposableNotify = observerNotify
             .Subscribe(
                 n =>
@@ -124,33 +143,31 @@ class Program
     private static void ListenToMSearchResponse(CancellationToken ct)
     {
         var mSearchResObs = _controlPoint.MSearchResponseObservable();
-
         var counter = 0;
-
         var disposableMSearchresponse = mSearchResObs
             .Subscribe(
                 res =>
                 {
                     counter++;
-                    Console.WriteLine($"---### Control Point Received a  M-SEARCH RESPONSE #{counter} ###---");
+                    Console.WriteLine($"---### Control Point Received a M-SEARCH RESPONSE #{counter} ###---");
                     Console.WriteLine($"{res?.TransportType.ToString()}");
                     Console.WriteLine($"Status code: {res.StatusCode} {res.ResponseReason}");
                     Console.WriteLine($"Location: {res?.Location?.AbsoluteUri}");
                     Console.WriteLine($"Date: {res.Date.ToString(CultureInfo.CurrentCulture)}");
                     Console.WriteLine($"Cache-Control: max-age = {res.CacheControl}");
-                    Console.WriteLine($"Server: " +
-                                             $"{res?.Server?.OperatingSystem}/{res?.Server?.OperatingSystemVersion} " +
-                                             $"UPNP/" +
-                                             $"{res?.Server?.UpnpMajorVersion}.{res?.Server?.UpnpMinorVersion}" +
-                                             $" " +
-                                             $"{res?.Server?.ProductName}/{res?.Server?.ProductVersion}" +
-                                             $" - ({res?.Server?.FullString})");
-                    Console.WriteLine($"ST: {res?.ST?.STString}");
+                    // Console.WriteLine($"Server: " +
+                    //                          $"{res?.Server?.OperatingSystem}/{res?.Server?.OperatingSystemVersion} " +
+                    //                          $"UPNP/" +
+                    //                          $"{res?.Server?.UpnpMajorVersion}.{res?.Server?.UpnpMinorVersion}" +
+                    //                          $" " +
+                    //                          $"{res?.Server?.ProductName}/{res?.Server?.ProductVersion}" +
+                    //                          $" - ({res?.Server?.FullString})");
+                    Console.WriteLine($"ST: {res?.ST?.STString}  EntityType={res?.ST?.EntityType}");
                     Console.WriteLine($"USN: {res.USN?.ToUri()}");
-                    Console.WriteLine($"BOOTID.UPNP.ORG: {res?.BOOTID}");
-                    Console.WriteLine($"CONFIGID.UPNP.ORG: {res?.CONFIGID}");
-                    Console.WriteLine($"SEARCHPORT.UPNP.ORG: {res?.SEARCHPORT}");
-                    Console.WriteLine($"SECURELOCATION: {res?.SECURELOCATION}");
+                    // Console.WriteLine($"BOOTID.UPNP.ORG: {res?.BOOTID}");
+                    // Console.WriteLine($"CONFIGID.UPNP.ORG: {res?.CONFIGID}");
+                    // Console.WriteLine($"SEARCHPORT.UPNP.ORG: {res?.SEARCHPORT}");
+                    // Console.WriteLine($"SECURELOCATION: {res?.SECURELOCATION}");
 
                     if (res?.Headers?.Any() ?? false)
                     {
@@ -170,48 +187,22 @@ class Program
                 });
     }
 
-
     private static async Task StartMSearchRequestMulticastAsync()
     {
         var mSearchMessage = new MSearch
         {
             TransportType = TransportType.Multicast,
             CPFN = "TestXamarin",
-
             Name = Constants.UdpSSDPMultiCastAddress,
             Port = Constants.UdpSSDPMulticastPort,
             MX = TimeSpan.FromSeconds(5),
             TCPPORT = Constants.TcpResponseListenerPort.ToString(),
-            //ST = new ST("urn:myharmony-com:device:harmony:1"),
             ST = new ST
             {
                 StSearchType = STType.All
             },
-            //ST = new ST
-            //{
-            //    STtype  = STtype.ServiceType,
-            //    Type = "SwitchPower",
-            //    Version = "1",
-            //    HasDomain = false
-            //},
-            //ST = new ST
-            //{
-            //    StSearchType = STSearchType.DomainDeviceSearch,
-            //    Domain = "myharmony-com", 
-            //    DeviceType = "harmony",
-            //    Version = "1",
-            //    //STtype = STtype.DeviceType,
-            //    ////DeviceUUID = "myharmony-com:device:harmony:1",
-            //    //Type = "harmony",
-            //    //Version = "1",
-            //    //HasDomain = true,
-            //    //DomainName = "myharmony-com"
-            //},
-
             UserAgent = new UserAgent
             {
-                OperatingSystem = "Windows",
-                OperatingSystemVersion = "10.0",
                 ProductName = "SSDP.UPNP.PCL",
                 ProductVersion = "0.9",
                 UpnpMajorVersion = "2",
@@ -220,31 +211,6 @@ class Program
         };
 
         await _controlPoint.SendMSearchAsync(mSearchMessage, _controlPointLocalIp1);
-    }
-    
-    static IPAddress GetLocalIPAddress()
-    {
-        foreach (NetworkInterface network in NetworkInterface.GetAllNetworkInterfaces())
-        {
-            if (network.NetworkInterfaceType != NetworkInterfaceType.Ethernet
-                || network.OperationalStatus != OperationalStatus.Up
-                || new[] { "docker", "tailscale" }.Any(c => network.Description.ToLower().Contains(c)))
-            {
-                continue;
-            }
-
-            foreach (IPAddressInformation address in network.GetIPProperties().UnicastAddresses)
-            {
-                if (address.Address.AddressFamily != AddressFamily.InterNetwork)
-                    continue;
-
-                if (IPAddress.IsLoopback(address.Address))
-                    continue;
-
-                return address.Address;
-            }
-        }
-        return IPAddress.Parse("127.0.0.1");
     }
     
 }
