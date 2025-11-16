@@ -24,4 +24,10 @@
       <ProjectReference Include="..\1iveowl\1iveowl.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Resources\GetTransportInfoResponse.xml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

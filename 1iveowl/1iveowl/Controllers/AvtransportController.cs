@@ -458,7 +458,18 @@ public class AvtransportController : ControllerBase
                 responseXml = WrapEmptyActionResponse("PreviousResponse");
                 break;
             case "GetTransportInfo":
-                responseXml = transportInfoXml(transportState);
+                responseXml = XmlToString.SerializeObject(new Envelope
+                {
+                    Body = new Body
+                    {
+                        GetTransportInfoResponse = new GetTransportInfoResponse
+                        {
+                            CurrentTransportState = transportState,
+                            CurrentTransportStatus = "OK",
+                            CurrentSpeed = "1"
+                        }
+                    }
+                });
                 break;
             case "GetPositionInfo":
                 responseXml = positionInfoXml(currentUri);
@@ -478,18 +489,6 @@ public class AvtransportController : ControllerBase
     }
 
     static string WrapEmptyActionResponse(string responseName) => $"<?xml version=\"1.0\"?>\n<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n  <s:Body>\n    <u:{responseName} xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"/>\n  </s:Body>\n</s:Envelope>";
-
-    static string transportInfoXml(string currentTransportState) => $@"<?xml version=""1.0""?>
-<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
-  <s:Body>
-    <u:GetTransportInfoResponse xmlns:u=""urn:schemas-upnp-org:service:AVTransport:1"">
-      <InstanceID>0</InstanceID>
-      <CurrentTransportState>{SecurityElement.Escape(currentTransportState)}</CurrentTransportState>
-      <CurrentTransportStatus>OK</CurrentTransportStatus>
-      <CurrentSpeed>1</CurrentSpeed>
-    </u:GetTransportInfoResponse>
-  </s:Body>
-</s:Envelope>";
 
     static string positionInfoXml(string uri) => $@"<?xml version=""1.0""?>
 <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">

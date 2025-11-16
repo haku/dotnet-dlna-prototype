@@ -3,7 +3,7 @@ using _1iveowl.Models;
 
 namespace _1iveowl.test;
 
-public class UnitTest1
+public class ActionsTests
 {
     [Fact]
     public void Test1()
