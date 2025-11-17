@@ -345,5 +345,9 @@
         <allowedValue>NOT_IMPLEMENTED</allowedValue>
       </allowedValueList>
     </stateVariable>
+    <stateVariable sendEvents="yes">
+      <name>LastChange</name>
+      <dataType>string</dataType>
+    </stateVariable>
   </serviceStateTable>
 </scpd>

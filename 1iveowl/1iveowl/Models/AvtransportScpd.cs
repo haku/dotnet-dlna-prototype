@@ -75,6 +75,8 @@ public class AvtransportScpd
         "WRITABLE", "PROTECTED", "NOT_WRITABLE", "UNKNOWN", "NOT_IMPLEMENTED"]};
     private static Argument WriteStatus = new() { name = "WriteStatus", direction = "out", relatedStateVariable = RecordMediumWriteStatus.name };
 
+    private static StateVariable LastChange = new() {name = "LastChange", dataType = "string", sendEvents = "yes"};
+
     public static Scpd SCPD = new() {
         actions = [
             new ScpdAction{name = "SetAVTransportURI", arguments = [InstanceID, CurrentURIIn, CurrentURIMetaDataIn]},
