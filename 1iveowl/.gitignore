@@ -47,3 +47,5 @@ out/
 .idea/*
 !.idea/codeStyles
 !.idea/runConfigurations
+
+*.sln.DotSettings.user
