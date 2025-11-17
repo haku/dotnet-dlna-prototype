@@ -54,7 +54,7 @@ public class AvtransportController : ControllerBase
 
     string currentUri = "";
     string transportState = "STOPPED";
-    
+
     [HttpPost]
     [Route("AVTransport/control")]
     public async Task<IActionResult> AVTransportControl([FromBody] Envelope envelope)
@@ -184,6 +184,14 @@ public class AvtransportController : ControllerBase
         var resp = Content(responseXml, CONTENT_TYPE);
         resp.StatusCode = status;
         return resp;
+    }
+
+    // Request starting HTTP/1.1 SUBSCRIBE http://192.168.1.66:5000/AVTransport/event - - -
+    [HttpSubscribe]
+    [Route("AVTransport/event")]
+    public async Task<IActionResult> AVTransportSubscribe()
+    {
+        return StatusCode((int)HttpStatusCode.NotImplemented);
     }
 
     static string WrapEmptyActionResponse(string responseName) => $"<?xml version=\"1.0\"?>\n<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n  <s:Body>\n    <u:{responseName} xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"/>\n  </s:Body>\n</s:Envelope>";
