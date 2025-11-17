@@ -9,8 +9,13 @@ public class XmlToString
     public static string SerializeObject<T>(T toSerialize)
     {
         XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-        ns.Add("s", "http://schemas.xmlsoap.org/soap/envelope/");
-        ns.Add("u", "urn:schemas-upnp-org:service:AVTransport:1");
+        if (toSerialize is Scpd)
+        {
+            ns.Add("", "urn:schemas-upnp-org:service-1-0");
+        } else {
+            ns.Add("s", "http://schemas.xmlsoap.org/soap/envelope/");
+            ns.Add("u", "urn:schemas-upnp-org:service:AVTransport:1");
+        }
 
         XmlSerializer xmlSerializer = new XmlSerializer(toSerialize.GetType());
         using MemoryStream stream = new MemoryStream();
