@@ -4,29 +4,11 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ATestInvoker_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E1_003Fresharper_002Dhost_003FSourcesCache_003F5e14a4e27990972fa4ae94975603bd298aaf328ee083c03b10569ee4724d57_003FTestInvoker_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AXmlSerializer_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E1_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F6574f280139d44528c6a04097b2cef8c7a1a00_003F9c_003F26fda7e4_003FXmlSerializer_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AXmlTextWriter_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E1_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F6574f280139d44528c6a04097b2cef8c7a1a00_003F78_003F04fb9c0f_003FXmlTextWriter_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=1a172903_002D69d4_002D4a9e_002Dbf1f_002D06842bc1da93/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetTransportInfoResponse" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::FC0E4D7C-6565-4908-8D89-73FEF47C11D5::net9.0::_1iveowl.test.MessagesTests&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=3d370c9a_002Dba00_002D4e2d_002D8e9b_002D873293d2f205/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="MessagesTests #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::FC0E4D7C-6565-4908-8D89-73FEF47C11D5::net9.0::_1iveowl.test.MessagesTests&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=5cbeea64_002Dcb40_002D4681_002D9ccb_002D99e04f4c9854/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="MessagesTests #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::FC0E4D7C-6565-4908-8D89-73FEF47C11D5::net9.0::_1iveowl.test.MessagesTests&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=88d82406_002D9d92_002D48df_002D92cf_002D6ca633096e97/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="MessagesTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::FC0E4D7C-6565-4908-8D89-73FEF47C11D5::net9.0::_1iveowl.test.MessagesTests&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=fb3eed3a_002D1f1b_002D46a0_002Dbd0f_002D4229b6b43630/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="MessagesTests #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Project Location="/home/fae/src/dotnet-dlna-prototype/1iveowl/1iveowl.test" Presentation="&amp;lt;1iveowl.test&amp;gt;" /&gt;
-&lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
 	
 	
 	</wpf:ResourceDictionary>

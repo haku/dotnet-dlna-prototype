@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:u="urn:schemas-upnp-org:service:AVTransport:1" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body>
+    <u:GetMediaInfoResponse>
+      <NrTracks>0</NrTracks>
+      <CurrentURI>https://example.com/path/to/media</CurrentURI>
+      <CurrentURIMetaData>&lt;DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:sec="http://www.sec.co.kr/" xmlns:xbmc="urn:schemas-xbmc-org:metadata-1-0/"&gt;&lt;item id="https://example.com/path/to/media"&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;</CurrentURIMetaData>
+      <MediaDuration>01:02:03</MediaDuration>
+      <NextURI />
+      <NextURIMetaData />
+      <PlayMedium>NONE</PlayMedium>
+      <RecordMedium>NOT_IMPLEMENTED</RecordMedium>
+      <WriteStatus>NOT_IMPLEMENTED</WriteStatus>
+    </u:GetMediaInfoResponse>
+  </s:Body>
+</s:Envelope>

@@ -42,5 +42,11 @@ public class Body
     public GetMediaInfo? GetMediaInfo { get; set; }
 
     [XmlElement(Namespace = "urn:schemas-upnp-org:service:AVTransport:1")]
+    public GetMediaInfoResponse? GetMediaInfoResponse { get; set; }
+
+    [XmlElement(Namespace = "urn:schemas-upnp-org:service:AVTransport:1")]
+    public GetPositionInfoResponse? GetPositionInfoResponse { get; set; }
+
+    [XmlElement(Namespace = "urn:schemas-upnp-org:service:AVTransport:1")]
     public GetTransportInfoResponse? GetTransportInfoResponse { get; set; }
 }

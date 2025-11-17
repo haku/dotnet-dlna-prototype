@@ -472,10 +472,28 @@ public class AvtransportController : ControllerBase
                 });
                 break;
             case "GetPositionInfo":
-                responseXml = positionInfoXml(currentUri);
+                responseXml = XmlToString.SerializeObject(new Envelope
+                {
+                    Body = new Body
+                    {
+                        GetPositionInfoResponse = new GetPositionInfoResponse
+                        {
+                            TrackURI = currentUri,
+                        }
+                    }
+                });
                 break;
             case "GetMediaInfo":
-                responseXml = mediaInfoXml(currentUri);
+                responseXml = XmlToString.SerializeObject(new Envelope
+                {
+                    Body = new Body
+                    {
+                        GetMediaInfoResponse = new GetMediaInfoResponse
+                        {
+                            CurrentURI = currentUri,
+                        }
+                    }
+                });
                 break;
             default:
                 status = 500;
@@ -489,41 +507,6 @@ public class AvtransportController : ControllerBase
     }
 
     static string WrapEmptyActionResponse(string responseName) => $"<?xml version=\"1.0\"?>\n<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n  <s:Body>\n    <u:{responseName} xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"/>\n  </s:Body>\n</s:Envelope>";
-
-    static string positionInfoXml(string uri) => $@"<?xml version=""1.0""?>
-<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
-  <s:Body>
-    <u:GetPositionInfoResponse xmlns:u=""urn:schemas-upnp-org:service:AVTransport:1"">
-      <InstanceID>0</InstanceID>
-      <Track>0</Track>
-      <TrackDuration>00:00:00</TrackDuration>
-      <TrackMetaData></TrackMetaData>
-      <TrackURI>{SecurityElement.Escape(uri)}</TrackURI>
-      <RelTime>00:00:00</RelTime>
-      <AbsTime>00:00:00</AbsTime>
-      <RelCount>2147483647</RelCount>
-      <AbsCount>2147483647</AbsCount>
-    </u:GetPositionInfoResponse>
-  </s:Body>
-</s:Envelope>";
-
-    static string mediaInfoXml(string uri) => $@"<?xml version=""1.0""?>
-<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
-  <s:Body>
-    <u:GetMediaInfoResponse xmlns:u=""urn:schemas-upnp-org:service:AVTransport:1"">
-      <InstanceID>0</InstanceID>
-      <NrTracks>0</NrTracks>
-      <CurrentURI>{SecurityElement.Escape(uri)}</CurrentURI>
-      <CurrentURIMetaData></CurrentURIMetaData>
-      <MediaDuration>01:00:00</MediaDuration>
-      <NextURI></NextURI>
-      <NextURIMetaData></NextURIMetaData>
-      <PlayMedium>NONE</PlayMedium>
-      <RecordMedium>NOT_IMPLEMENTED</RecordMedium>
-      <WriteStatus>NOT_IMPLEMENTED</WriteStatus>
-    </u:GetMediaInfoResponse>
-  </s:Body>
-</s:Envelope>";
 
     static string soapError(string code, string desc) => $@"<?xml version=""1.0""?>
 <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">

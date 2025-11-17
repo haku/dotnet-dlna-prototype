@@ -14,12 +14,11 @@ public class XmlToString
 
         XmlSerializer xmlSerializer = new XmlSerializer(toSerialize.GetType());
         using MemoryStream stream = new MemoryStream();
-        using var xmlWriter = XmlTextWriter.Create(stream, new XmlWriterSettings
-        {
-            Encoding = new UTF8Encoding(false),
-            Indent = true,
-        });
+        using var xmlWriter = new XmlTextWriter(stream, new UTF8Encoding(false));
+        xmlWriter.Formatting = Formatting.Indented;
+
         xmlSerializer.Serialize(xmlWriter, toSerialize, ns);
         return Encoding.UTF8.GetString(stream.ToArray());
     }
+
 }
