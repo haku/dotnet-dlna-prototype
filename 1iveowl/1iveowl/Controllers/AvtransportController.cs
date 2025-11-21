@@ -11,6 +11,7 @@ public class AvtransportController : ControllerBase
 {
     private readonly string CONTENT_TYPE = "text/xml; charset=\"utf-8\"";
     private readonly UpnpManager upnpManager;
+    private readonly SubscriptionManager subscriptionManager = new();
 
     public AvtransportController(UpnpManager upnpManager)
     {
@@ -191,7 +192,61 @@ public class AvtransportController : ControllerBase
     [Route("AVTransport/event")]
     public async Task<IActionResult> AVTransportSubscribe()
     {
-        return StatusCode((int)HttpStatusCode.NotImplemented);
+        string callbackUrl = Request.Headers["CALLBACK"].FirstOrDefault();
+        string nt = Request.Headers["NT"].FirstOrDefault();
+        string timeoutRaw = Request.Headers["TIMEOUT"].FirstOrDefault();
+        int? timeoutSeconds = parseTimeout(timeoutRaw);
+        string sid = Request.Headers["SID"].FirstOrDefault();
+        string statevar = Request.Headers["STATEVAR"].FirstOrDefault();
+        Console.WriteLine($"SUBSCRIBE: {callbackUrl} nt={nt} to={timeoutRaw} to={timeoutSeconds} sid={sid} statevar={statevar}");
+
+        if (timeoutSeconds == null)
+            return BadRequest("unknown value for TIMEOUT header.");
+
+        if (sid != null)
+        { // renew
+            if (subscriptionManager.Renew(sid, timeoutSeconds.Value))
+                return Ok();
+            return BadRequest();
+        }
+
+        if (nt != "upnp:event")
+            return BadRequest("unknown value for NT header.");
+
+        var sub = subscriptionManager.Add(callbackUrl, timeoutSeconds.Value);
+
+        Response.Headers.Add("Sid", sub.Sid);
+        Response.Headers.Add("Timeout", $"Second-{timeoutSeconds}");
+        return Ok();
+
+        // TODO after finishing this request, send event with everything in it.
+    }
+
+    [HttpUnSubscribe]
+    [Route("AVTransport/event")]
+    public async Task<IActionResult> AVTransportUnSubscribe()
+    {
+        string sid = Request.Headers["SID"].FirstOrDefault();
+        Console.WriteLine($"UNSUBSCRIBE: sid={sid}");
+
+        if (sid == null)
+            return BadRequest();
+
+        if (subscriptionManager.Remove(sid))
+            return Ok();
+        return StatusCode(412); // DA spec if sub not found.
+    }
+
+    private int? parseTimeout(string raw)
+    {
+        if (raw.StartsWith("Second-"))
+        {
+            if (int.TryParse(raw.AsSpan("Second-".Length), out var ret))
+            {
+                return ret;
+            }
+        }
+        return null;
     }
 
     static string WrapEmptyActionResponse(string responseName) => $"<?xml version=\"1.0\"?>\n<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n  <s:Body>\n    <u:{responseName} xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"/>\n  </s:Body>\n</s:Envelope>";
