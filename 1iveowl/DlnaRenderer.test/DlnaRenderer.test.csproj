@@ -21,7 +21,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\1iveowl.csproj" />
-      <ProjectReference Include="..\1iveowl\1iveowl.csproj" />
+      <ProjectReference Include="..\DlnaRenderer\DlnaRenderer.csproj" />
     </ItemGroup>
 
     <ItemGroup>

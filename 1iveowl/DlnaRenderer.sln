@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1iveowl.test", "1iveowl.test\1iveowl.test.csproj", "{FC0E4D7C-6565-4908-8D89-73FEF47C11D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DlnaRenderer.test", "DlnaRenderer.test\DlnaRenderer.test.csproj", "{FC0E4D7C-6565-4908-8D89-73FEF47C11D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1iveowl", "1iveowl\1iveowl.csproj", "{B07FF227-D402-499F-879B-C55A42DA3B93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DlnaRenderer", "DlnaRenderer\DlnaRenderer.csproj", "{B07FF227-D402-499F-879B-C55A42DA3B93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

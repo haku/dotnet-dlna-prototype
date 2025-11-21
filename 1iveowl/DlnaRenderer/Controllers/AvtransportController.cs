@@ -187,7 +187,45 @@ public class AvtransportController : ControllerBase
         return resp;
     }
 
-    // Request starting HTTP/1.1 SUBSCRIBE http://192.168.1.66:5000/AVTransport/event - - -
+    // UPnP-arch-DeviceArchitecture-v2.0-20200417.pdf page 90
+
+    // SUBSCRIBE http://192.168.1.66:5000/AVTransport/event HTTP/1.1
+    // HOST: publisher host:publisher port
+    // CALLBACK: <delivery URL>
+    // NT: upnp:event
+    // TIMEOUT: Second-requested subscription duration
+    // STATEVAR: CSV of Statevariables
+
+    // SUBSCRIBE /AVTransport/event HTTP/1.1
+    // Timeout: Second-600
+    // Nt: upnp:event
+    // Callback: <http://192.168.1.5:43395/dev/6ec8fed7-918d-0ea1-3785-5bbaf277511b/svc/upnp-org/AVTransport/event/cb>
+    // Host: 192.168.1.66:5000
+
+    // HTTP/1.1 200 OK
+    // SID: uuid:subscription-UUID
+    // CONTENT-LENGTH: 0
+    // TIMEOUT: Second-actual subscription duration
+    // ACCEPTED-STATEVAR: CSV of state variables
+    // (no body)
+
+    // HTTP/1.1 200 OK
+    // Date: Fri, 21 Nov 2025 19:34:24 GMT
+    // Server: Linux/6.12.57 UPnP/1.0 jUPnP/3.0
+    // Timeout: Second-1800
+    // Sid: uuid:dc86de7b-c094-47e8-a018-20ff586feb03
+    // Content-Length: 0
+
+    // renew
+    // SUBSCRIBE publisher path HTTP/1.1
+    // HOST: publisher host:publisher port
+    // SID: uuid:subscription UUID
+    // TIMEOUT: Second-requested subscription duration
+
+    // UNSUBSCRIBE publisher path HTTP/1.1
+    // HOST: publisher host:publisher port
+    // SID: uuid:subscription UUID
+
     [HttpSubscribe]
     [Route("AVTransport/event")]
     public async Task<IActionResult> AVTransportSubscribe()
