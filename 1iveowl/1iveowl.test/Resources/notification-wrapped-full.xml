@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">
+  <e:property>
+    <LastChange>&lt;Event xmlns="urn:schemas-upnp-org:metadata-1-0/AVT/"&gt;&lt;InstanceID val="0"&gt;&lt;AVTransportURI val="https://example.com/path/to/media" /&gt;&lt;AVTransportURIMetaData val="metadata" /&gt;&lt;CurrentMediaDuration val="00:00:00" /&gt;&lt;CurrentPlayMode val="NORMAL" /&gt;&lt;CurrentTrack val="1" /&gt;&lt;CurrentTrackDuration val="00:03:11" /&gt;&lt;CurrentTrackMetaData val="metadata" /&gt;&lt;CurrentTrackURI val="https://example.com/path/to/media" /&gt;&lt;CurrentTransportActions val="Stop,Pause,Seek,Next" /&gt;&lt;TransportPlaySpeed val="1" /&gt;&lt;TransportState val="PLAYING" /&gt;&lt;TransportStatus val="OK" /&gt;&lt;/InstanceID&gt;&lt;/Event&gt;</LastChange>
+  </e:property>
+</e:propertyset>
